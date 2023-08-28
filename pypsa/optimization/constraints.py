@@ -391,24 +391,22 @@ def define_ramp_limit_constraints(n, sns, c, attr):
 
     # ----------------------------- Extendable Generators ----------------------------- #
 
-    assets = n.df(c).reindex(ext_i)
-
     # ext up
-    if not assets.ramp_limit_up.isnull().all():
+    if not ramp_limit_up[ext_i].isnull().all().all():
         p_nom = m[f"{c}-p_nom"]
-        limit_pu = assets.ramp_limit_up.to_xarray()
-        lhs = p_actual(ext_i) - p_previous(ext_i) - limit_pu * p_nom
+        ramp_limit = xr.DataArray(ramp_limit_up.reindex(active.index, columns=ext_i))*p_nom
+        lhs = p_actual(ext_i) - p_previous(ext_i) - ramp_limit
         rhs = rhs_start.reindex(columns=ext_i)
-        mask = active.reindex(columns=ext_i) & assets.ramp_limit_up.notnull()
+        mask = active.reindex(columns=ext_i) & ~ramp_limit_up.isnull().reindex(active.index, columns=ext_i)
         m.add_constraints(lhs, "<=", rhs, f"{c}-ext-{attr}-ramp_limit_up", mask=mask)
 
     # ext down
-    if not assets.ramp_limit_down.isnull().all():
+    if not ramp_limit_up[ext_i].isnull().all().all():
         p_nom = m[f"{c}-p_nom"]
-        limit_pu = assets.ramp_limit_down.to_xarray()
-        lhs = (1, p_actual(ext_i)), (-1, p_previous(ext_i)), (limit_pu, p_nom)
+        ramp_limit = xr.DataArray(ramp_limit_up.reindex(active.index, columns=ext_i))*p_nom
+        lhs = p_actual(ext_i) - p_previous(ext_i) + ramp_limit
         rhs = rhs_start.reindex(columns=ext_i)
-        mask = active.reindex(columns=ext_i) & assets.ramp_limit_down.notnull()
+        mask = active.reindex(columns=ext_i) & ~ramp_limit_down.isnull().reindex(active.index, columns=ext_i)
         m.add_constraints(lhs, ">=", rhs, f"{c}-ext-{attr}-ramp_limit_down", mask=mask)
 
     # ----------------------------- Committable Generators ----------------------------- #
