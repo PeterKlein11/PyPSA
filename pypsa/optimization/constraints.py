@@ -326,8 +326,8 @@ def define_ramp_limit_constraints(n, sns, c, attr):
     if {"ramp_limit_up", "ramp_limit_down"}.isdisjoint(n.df(c)):
         return
 
-    ramp_limit_up =  n.get_switchable_as_dense(c,'ramp_limit_up')
-    ramp_limit_down = n.get_switchable_as_dense(c,'ramp_limit_down')
+    ramp_limit_up =  get_as_dense(n, c, "ramp_limit_up", sns)#n.get_switchable_as_dense(c,'ramp_limit_up')
+    ramp_limit_down = get_as_dense(n, c, "ramp_limit_down", sns)#n.get_switchable_as_dense(c,'ramp_limit_down')
 
     if (ramp_limit_up.isnull().all() & ramp_limit_down.isnull().all()).all():
         return
@@ -394,7 +394,7 @@ def define_ramp_limit_constraints(n, sns, c, attr):
     # ext up
     if not ramp_limit_up[ext_i].isnull().all().all():
         p_nom = m[f"{c}-p_nom"]
-        ramp_limit = xr.DataArray(ramp_limit_up.reindex(active.index, columns=ext_i))*p_nom
+        ramp_limit = DataArray(ramp_limit_up.reindex(active.index, columns=ext_i))*p_nom
         lhs = p_actual(ext_i) - p_previous(ext_i) - ramp_limit
         rhs = rhs_start.reindex(columns=ext_i)
         mask = active.reindex(columns=ext_i) & ~ramp_limit_up.isnull().reindex(active.index, columns=ext_i)
@@ -403,7 +403,7 @@ def define_ramp_limit_constraints(n, sns, c, attr):
     # ext down
     if not ramp_limit_up[ext_i].isnull().all().all():
         p_nom = m[f"{c}-p_nom"]
-        ramp_limit = xr.DataArray(ramp_limit_up.reindex(active.index, columns=ext_i))*p_nom
+        ramp_limit = DataArray(ramp_limit_up.reindex(active.index, columns=ext_i))*p_nom
         lhs = p_actual(ext_i) - p_previous(ext_i) + ramp_limit
         rhs = rhs_start.reindex(columns=ext_i)
         mask = active.reindex(columns=ext_i) & ~ramp_limit_down.isnull().reindex(active.index, columns=ext_i)
