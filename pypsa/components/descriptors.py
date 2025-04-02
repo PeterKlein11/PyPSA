@@ -58,4 +58,4 @@ def get_active_assets(
         if period not in c.n_save.investment_periods:
             raise ValueError("Investment period not in `n.investment_periods`")
         active[period] = c.static.eval("build_year <= @period < build_year + lifetime")
-    return pd.DataFrame(active).any(axis=1) & c.static.active
+    return (pd.DataFrame(active).any(axis=1) & c.static.active).astype(bool)
